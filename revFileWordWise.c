@@ -3,7 +3,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 
-#define STEPSIZE 2
+#define STEPSIZE 10
 #define LINEWIDTH 80
 #define MAX_FILENAME_SIZE 10
 
@@ -94,7 +94,7 @@ void writeToScratchFile(char *lines[STEPSIZE],
  *
  * input:- number of scratch files to merge.
  **************************************************************/
-int combineScratchToOutput(int numScratchFiles)
+void combineScratchToOutput(int numScratchFiles)
 {
    FILE *outfp;
    FILE *scratchfp;
@@ -152,7 +152,7 @@ int combineScratchToOutput(int numScratchFiles)
  **************************************************************/
 int main()
 {
-   FILE *inpfp, *scratchfp;
+   FILE *inpfp;
    char *lines[STEPSIZE];
    char *line;
    int i, len;
@@ -163,7 +163,7 @@ int main()
    line = (char *)malloc(sizeof(char) * LINEWIDTH);
    if (!line) {
       printf("memory allocation failure");
-      return;
+      goto cleanup;
    }
    memset(line, 0, sizeof(char) * LINEWIDTH);
 
@@ -171,7 +171,7 @@ int main()
       lines[i] = (char *)malloc(sizeof(char) * LINEWIDTH);
       if (!lines[i]) {
          printf("memory allocation failure");
-         return;
+         goto cleanup;
       }
       memset(lines[i], 0, sizeof(char) * LINEWIDTH);
    }
@@ -179,7 +179,7 @@ int main()
    inpfp = fopen("input.txt", "r");
    if (!inpfp) {
       printf("unable to open input file");
-      return;
+      goto cleanup;
    }
   
    while (fgets(line, LINEWIDTH, inpfp)) {
@@ -212,12 +212,17 @@ int main()
       combineScratchToOutput(iterations);
    }
 
+cleanup:
    // no memory leaks!!
-   free(line);
-   for(i = 0;i < STEPSIZE; i++) {
-      free(lines[i]);
+   if (line) {
+      free(line);
    }
-   return;
+   for(i = 0;i < STEPSIZE; i++) {
+      if (lines[i]) {
+         free(lines[i]);
+      }
+   }
+   return 0;
 }
 
 
